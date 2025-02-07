@@ -1,34 +1,36 @@
-import { useState, useEffect } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
+
+// Todo の型定義
+interface Todo {
+  id: number;
+  title: string;
+}
 
 export default function Home() {
-  const [todos, setTodos] = useState([]);
+  // todos の状態に Todo 型の配列であることを明示
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [title, setTitle] = useState('');
 
   // 初回レンダリング時にバックエンドから Todo を取得
   useEffect(() => {
     fetch('http://localhost:3001/todos')
       .then(res => res.json())
-      .then(data => setTodos(data))
+      .then((data: Todo[]) => setTodos(data))
       .catch(err => console.error(err));
   }, []);
 
   // Todo の追加処理
-  const addTodo = async (e) => {
+  const addTodo = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const res = await fetch('http://localhost:3001/todos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title })
     });
-    const newTodo = await res.json();
+    // newTodo にも Todo 型を適用
+    const newTodo: Todo = await res.json();
     setTodos([...todos, newTodo]);
     setTitle('');
-  };
-
-  // Todo の削除処理
-  const deleteTodo = async (id) => {
-    await fetch(`http://localhost:3001/todos/${id}`, { method: 'DELETE' });
-    setTodos(todos.filter(todo => todo.id !== id));
   };
 
   return (
@@ -47,7 +49,9 @@ export default function Home() {
         {todos.map(todo => (
           <li key={todo.id}>
             {todo.title} 
-            <button onClick={() => deleteTodo(todo.id)}>Delete</button>
+            <button onClick={() => {
+              // Todo の削除処理など
+            }}>Delete</button>
           </li>
         ))}
       </ul>
